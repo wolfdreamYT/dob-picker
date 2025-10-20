@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Most USELESS Date of Birth picker EVER - Happy Birthday</title>
+  <style>
+    :root{--bg:#060016;--accent:#ff3bff;--muted:#e8dcdc}
+    html,body{height:100%;margin:0;font-family: 'Comic Sans MS', cursive, sans-serif;background:linear-gradient(120deg,#0a0020,#2b0037);color:var(--muted)}
+    .wrap{max-width:720px;margin:6vh auto;padding:20px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.35));box-shadow:0 20px 60px rgba(0,0,0,0.7)}
+    h1{font-size:20px;margin:0 0 12px}
+    .controls{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+    .small{padding:6px 10px;border-radius:8px;border:2px dashed var(--accent);background:transparent;color:var(--muted);cursor:default}
+
+    .calendar{background:linear-gradient(180deg,#0f0520,#1b0630);padding:12px;border-radius:12px;border:3px solid rgba(255,255,255,0.03)}
+    .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .grid{display:grid;grid-template-columns:repeat(7,44px);gap:6px;justify-content:center}
+    .cell{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:linear-gradient(180deg,#111,#272727);cursor:pointer;font-weight:700;user-select:none}
+    .cell:hover{transform:translateY(-6px) scale(1.06)}
+    .confirm{display:inline-block;padding:8px 12px;border-radius:12px;background:var(--accent);color:#000;font-weight:800;cursor:pointer;position:relative}
+    .message{margin-top:10px;font-size:13px;min-height:20px}
+
+    .runaway{transition: transform 160ms ease, left 160ms ease, top 160ms ease}
+
+    footer{font-size:12px;opacity:0.6;margin-top:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap" role="application" aria-label="Annoying date picker">
+    <h1>The Most USELESS Date of Birth Picker - Happy Birthday, i guess</h1>
+
+    <div class="controls">
+      <div id="yearBox" class="small">Year: <span id="yearLabel">1996</span></div>
+      <div id="monthBox" class="small">Month: <span id="monthLabel">October</span></div>
+      <div id="dayBox" class="small">Day: <span id="dayLabel">—</span></div>
+    </div>
+
+    <div class="calendar" id="calendar">
+      <div class="head">
+        <button id="prev">❮</button>
+        <div id="monthTitle">October 1996</div>
+        <button id="next">❯</button>
+      </div>
+
+      <div class="grid" id="grid"></div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
+        <div id="confirm" class="confirm runaway">Confirm</div>
+        <div class="message" id="message">WOLF STUDIOS - OFFICIAL PRESENT</div>
+      </div>
+    </div>
+
+    <footer>Did you ever get your real birthday? Tell me, im in business class at 2nd period!</footer>
+  </div>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const monthTitle = document.getElementById('monthTitle');
+    const monthLabel = document.getElementById('monthLabel');
+    const yearLabel = document.getElementById('yearLabel');
+    const dayLabel = document.getElementById('dayLabel');
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    const confirmBtn = document.getElementById('confirm');
+    const message = document.getElementById('message');
+
+    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+    let current = { year: 1996 + Math.floor(Math.random()*20)-10, month: Math.floor(Math.random()*12) };
+    let selected = { year: null, month: null, day: null };
+
+    function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
+
+    function render(){
+      monthTitle.textContent = months[current.month] + ' ' + current.year;
+      monthLabel.textContent = months[current.month];
+      yearLabel.textContent = current.year;
+      grid.innerHTML = '';
+
+      const total = 42; 
+      const realDays = daysInMonth(current.year, current.month);
+      const dayNumbers = [];
+      for(let d=1; d<=realDays; d++) dayNumbers.push(d);
+
+      while(dayNumbers.length < total){ dayNumbers.push('') }
+
+      for(let i=0;i<total;i++){
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        const val = dayNumbers[i];
+        cell.textContent = val === '' ? '' : String(val);
+
+        cell.addEventListener('mouseenter', ()=>{
+          if(cell.textContent.trim() === '') return;
+          const randomVal = Math.floor(Math.random()*99)+1;
+          cell.textContent = String(randomVal);
+          cell.dataset.mutated = '1';
+          if(Math.random() < 0.08) shuffleGrid();
+        });
+
+        cell.addEventListener('click', ()=>{
+          if(!cell.textContent.trim()) return;
+          const attemptedDay = parseInt(cell.textContent,10);
+          message.textContent = 'Click detected. Hold on — confirming day in 2s...';
+          setTimeout(()=>{
+            selected.day = attemptedDay;
+            dayLabel.textContent = selected.day;
+            message.textContent = 'Day confirmed. Now confirm month and year by using Next/Prev and pressing Confirm for each part.';
+          },2000);
+        });
+
+        grid.appendChild(cell);
+      }
+
+      grid.style.transform = 'rotate(' + (Math.random()*6-3) + 'deg)';
+    }
+
+    function shuffleGrid(){
+      current.month = Math.floor(Math.random()*12);
+      current.year = 1970 + Math.floor(Math.random()*60);
+      render();
+      message.textContent = 'The calendar reshuffles.';
+    }
+
+    prev.addEventListener('click', ()=>{ current.month--; if(current.month<0){current.month=11;current.year--} render(); message.textContent='Use Confirm to lock the MONTH (2s)'; });
+    next.addEventListener('click', ()=>{ current.month++; if(current.month>11){current.month=0;current.year++} render(); message.textContent='Use Confirm to lock the MONTH (2s)'; });
+
+    confirmBtn.addEventListener('mousemove', (e)=>{
+      if(Math.random() < 1){ 
+        const rect = confirmBtn.getBoundingClientRect();
+        const offsetX = (Math.random()*290-260);
+        const offsetY = (Math.random()*230-100);
+        confirmBtn.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+      }
+    });
+
+    confirmBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      if(selected.year === null){
+        message.textContent = 'Confirming YEAR... (2s)';
+        confirmBtn.style.pointerEvents = 'none';
+        setTimeout(()=>{
+          selected.year = current.year;
+          yearLabel.textContent = selected.year;
+          confirmBtn.style.pointerEvents = '';
+          message.textContent = 'Year locked. Now press Confirm again to lock month.';
+        },2000);
+        return;
+      }
+
+      if(selected.month === null){
+        message.textContent = 'Confirming MONTH... (2s)';
+        confirmBtn.style.pointerEvents = 'none';
+        setTimeout(()=>{
+          selected.month = current.month + 1;
+          monthLabel.textContent = months[current.month];
+          confirmBtn.style.pointerEvents = '';
+          message.textContent = 'Month locked. Now pick and click a day.' ;
+        },2000);
+        return;
+      }
+
+      if(selected.day === null){
+        message.textContent = 'You must click a day in the grid first.';
+        if(Math.random() < 0.6){ confirmBtn.style.transform = `translate(${Math.random()*140-70}px, ${Math.random()*80-40}px)` }
+        return;
+      }
+
+      if(Math.random() < 0.4){
+        message.textContent = 'That birthday is cursed. Calendar will reset.';
+        selected = { year: null, month: null, day: null };
+        yearLabel.textContent = current.year;
+        monthLabel.textContent = months[current.month];
+        dayLabel.textContent = '—';
+        setTimeout(()=>{ shuffleGrid(); }, 900);
+        return;
+      }
+
+      message.textContent = `Accepted: ${selected.year}-${String(selected.month).padStart(2,'0')}-${String(selected.day).padStart(2,'0')} (but is it...)`;
+      confirmBtn.style.transform = 'translateY(-24px)';
+      setTimeout(()=>confirmBtn.style.transform = '', 700);
+    });
+
+    setInterval(()=>{
+      const cells = Array.from(grid.querySelectorAll('.cell'));
+      if(cells.length===0) return;
+      const pick = cells[Math.floor(Math.random()*cells.length)];
+      if(pick && pick.textContent.trim()){
+        pick.textContent = String(Math.floor(Math.random()*99)+1);
+      }
+    }, 1800);
+
+    render();
+
+    setInterval(()=>{
+      confirmBtn.style.left = (Math.random()*8-4) + 'px';
+      confirmBtn.style.top = (Math.random()*6-3) + 'px';
+    }, 700);
+
+    document.addEventListener('keydown', (e)=>{ e.preventDefault(); message.textContent = 'Fuck you, stop trying to type.' });
+  </script>
+</body>
+</html>
